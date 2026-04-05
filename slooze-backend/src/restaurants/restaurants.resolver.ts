@@ -34,8 +34,8 @@ export class RestaurantsResolver {
   }
 
   // Resolve menuItems field when querying restaurants
-  @ResolveField(() => [MenuItemType])
-  async menuItems_field(
+  @ResolveField('menuItems', () => [MenuItemType])
+  async resolveMenuItems(
     @Parent() restaurant: RestaurantType,
     @CurrentUser() user: User,
   ): Promise<MenuItemType[]> {

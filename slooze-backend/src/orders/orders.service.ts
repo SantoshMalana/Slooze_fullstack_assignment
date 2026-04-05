@@ -83,7 +83,7 @@ export class OrdersService {
 
     // Build order items with price snapshot
     const orderItemsData = items.map((item) => {
-      const menuItem = menuItems.find((m) => m.id === item.menuItemId);
+      const menuItem = menuItems.find((m) => m.id === item.menuItemId)!;
       return {
         menuItemId: item.menuItemId,
         quantity: item.quantity,

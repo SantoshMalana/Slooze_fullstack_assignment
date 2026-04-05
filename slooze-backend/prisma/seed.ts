@@ -235,7 +235,7 @@ async function main() {
   console.log('✅ Created menu items for all restaurants');
 
   // ─── PAYMENT METHODS (Nick Fury — Admin) ─────────────────
-  const nickFury = users.find((u) => u.username === 'nick_fury');
+  const nickFury = users.find((u) => u.username === 'nick_fury')!;
 
   await prisma.paymentMethod.upsert({
     where: { id: 'pm-nick-1' },
@@ -253,7 +253,7 @@ async function main() {
   });
 
   // Payment for Thanos (India member — for checkout by Captain Marvel)
-  const thanos = users.find((u) => u.username === 'thanos');
+  const thanos = users.find((u) => u.username === 'thanos')!;
   await prisma.paymentMethod.upsert({
     where: { id: 'pm-thanos-1' },
     update: {},
@@ -270,7 +270,7 @@ async function main() {
   });
 
   // Payment for Travis (America member)
-  const travis = users.find((u) => u.username === 'travis');
+  const travis = users.find((u) => u.username === 'travis')!;
   await prisma.paymentMethod.upsert({
     where: { id: 'pm-travis-1' },
     update: {},

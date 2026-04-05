@@ -13,7 +13,7 @@ export class OrdersResolver {
   constructor(private ordersService: OrdersService) {}
 
   @Query(() => [OrderType])
-  async myOrders(@CurrentUser() user: User): Promise<OrderType[]> {
+  async myOrders(@CurrentUser() user: User) {
     return this.ordersService.findMyOrders(user);
   }
 
@@ -21,7 +21,7 @@ export class OrdersResolver {
   async order(
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: User,
-  ): Promise<OrderType> {
+  ) {
     return this.ordersService.findById(id, user);
   }
 
@@ -29,7 +29,7 @@ export class OrdersResolver {
   async createOrder(
     @Args('input') input: CreateOrderInput,
     @CurrentUser() user: User,
-  ): Promise<OrderType> {
+  ) {
     return this.ordersService.createOrder(input, user);
   }
 
@@ -38,7 +38,7 @@ export class OrdersResolver {
     @Args('orderId', { type: () => ID }) orderId: string,
     @Args('paymentMethodId', { type: () => ID }) paymentMethodId: string,
     @CurrentUser() user: User,
-  ): Promise<OrderType> {
+  ) {
     return this.ordersService.checkoutOrder(orderId, paymentMethodId, user);
   }
 
@@ -46,7 +46,7 @@ export class OrdersResolver {
   async cancelOrder(
     @Args('orderId', { type: () => ID }) orderId: string,
     @CurrentUser() user: User,
-  ): Promise<OrderType> {
+  ) {
     return this.ordersService.cancelOrder(orderId, user);
   }
 }

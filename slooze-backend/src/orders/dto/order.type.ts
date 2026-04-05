@@ -1,6 +1,8 @@
 import { ObjectType, Field, ID, Float, registerEnumType } from '@nestjs/graphql';
 import { OrderStatus } from '@prisma/client';
 import { MenuItemType } from '../../restaurants/dto/menu-item.type';
+import { RestaurantType } from '../../restaurants/dto/restaurant.type';
+import { PaymentMethodType } from '../../payments/dto/payment-method.type';
 
 registerEnumType(OrderStatus, { name: 'OrderStatus' });
 
@@ -45,11 +47,17 @@ export class OrderType {
   @Field()
   restaurantId: string;
 
-  @Field({ nullable: true })
-  paymentId?: string;
+  @Field(() => String, { nullable: true })
+  paymentId?: string | null;
 
   @Field(() => [OrderItemType], { nullable: true })
   orderItems?: OrderItemType[];
+
+  @Field(() => RestaurantType, { nullable: true })
+  restaurant?: RestaurantType;
+
+  @Field(() => PaymentMethodType, { nullable: true })
+  payment?: PaymentMethodType;
 
   @Field()
   createdAt: Date;
