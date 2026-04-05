@@ -1,0 +1,172 @@
+// Slooze - Role-Based Food Ordering App
+// Prisma Schema — PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum CountryCode {
+  INDIA
+  AMERICA
+}
+
+enum OrderStatus {
+  CREATED    // Cart stage — items added, not yet paid
+  PAID       // Successfully checked out
+  CANCELLED  // Cancelled by Admin or Manager
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+}
+
+// ─────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────
+
+model User {
+  id          String      @id @default(uuid())
+  username    String      @unique
+  password    String      // bcrypt hashed
+  displayName String
+  role        Role
+  country     CountryCode
+
+  orders         Order[]
+  paymentMethods PaymentMethod[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// RESTAURANT
+// ─────────────────────────────────────────────
+
+model Restaurant {
+  id      String      @id @default(uuid())
+  name    String
+  cuisine String
+  address String
+  country CountryCode // ReBAC — filter by this
+
+  menuItems MenuItem[]
+  orders    Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("restaurants")
+}
+
+// ─────────────────────────────────────────────
+// MENU ITEM
+// ─────────────────────────────────────────────
+
+model MenuItem {
+  id          String  @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  category    String  // e.g. "Starter", "Main", "Dessert", "Drink"
+  isAvailable Boolean @default(true)
+
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("menu_items")
+}
+
+// ─────────────────────────────────────────────
+// ORDER
+// ─────────────────────────────────────────────
+
+model Order {
+  id          String      @id @default(uuid())
+  status      OrderStatus @default(CREATED)
+  totalAmount Float       @default(0)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+
+  // Payment attached only after checkout
+  payment   PaymentMethod? @relation(fields: [paymentId], references: [id])
+  paymentId String?
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
+}
+
+// ─────────────────────────────────────────────
+// ORDER ITEM
+// ─────────────────────────────────────────────
+
+model OrderItem {
+  id       String @id @default(uuid())
+  quantity Int    @default(1)
+  price    Float  // snapshot of price at order time
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String
+
+  createdAt DateTime @default(now())
+
+  @@map("order_items")
+}
+
+// ─────────────────────────────────────────────
+// PAYMENT METHOD
+// ─────────────────────────────────────────────
+
+model PaymentMethod {
+  id             String      @id @default(uuid())
+  type           PaymentType
+  cardholderName String
+  lastFourDigits String      // Never store full card number
+  expiryMonth    Int
+  expiryYear     Int
+  isDefault      Boolean     @default(false)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payment_methods")
+}
