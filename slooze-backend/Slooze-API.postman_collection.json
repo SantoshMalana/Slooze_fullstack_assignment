@@ -1,0 +1,300 @@
+{
+  "info": {
+    "name": "Slooze API",
+    "description": "Role-based food ordering API — GraphQL collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "BASE_URL", "value": "http://localhost:4000/graphql" },
+    { "key": "TOKEN",    "value": "" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Login — Nick Fury (Admin)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const res = pm.response.json();",
+                "if (res.data?.login?.accessToken) {",
+                "  pm.collectionVariables.set('TOKEN', res.data.login.accessToken);",
+                "  console.log('Token saved');",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { login(username: \\\"nick_fury\\\", password: \\\"password123\\\") { accessToken user { id displayName role country } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Login — Captain Marvel (Manager India)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const res = pm.response.json();",
+                "if (res.data?.login?.accessToken) {",
+                "  pm.collectionVariables.set('TOKEN', res.data.login.accessToken);",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { login(username: \\\"captain_marvel\\\", password: \\\"password123\\\") { accessToken user { id displayName role country } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Login — Thanos (Member India)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const res = pm.response.json();",
+                "if (res.data?.login?.accessToken) {",
+                "  pm.collectionVariables.set('TOKEN', res.data.login.accessToken);",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { login(username: \\\"thanos\\\", password: \\\"password123\\\") { accessToken user { id displayName role country } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Login — Travis (Member America)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { login(username: \\\"travis\\\", password: \\\"password123\\\") { accessToken user { id displayName role country } } }\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🍽️ Restaurants",
+      "item": [
+        {
+          "name": "Get Restaurants (country-filtered)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { restaurants { id name cuisine address country menuItems { id name price category } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Get Menu Items for Restaurant",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { menuItems(restaurantId: \\\"rest-india-1\\\") { id name description price category isAvailable } }\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { createOrder(input: { restaurantId: \\\"rest-india-1\\\", items: [{ menuItemId: \\\"mi-sg-1\\\", quantity: 2 }, { menuItemId: \\\"mi-sg-3\\\", quantity: 1 }] }) { id status totalAmount orderItems { quantity price menuItem { name } } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { myOrders { id status totalAmount createdAt restaurant { name country } orderItems { quantity price menuItem { name } } payment { lastFourDigits } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Checkout Order (Admin/Manager only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { checkoutOrder(orderId: \\\"ORDER_ID_HERE\\\", paymentMethodId: \\\"pm-thanos-1\\\") { id status payment { lastFourDigits } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Cancel Order (Admin/Manager only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { cancelOrder(orderId: \\\"ORDER_ID_HERE\\\") { id status } }\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Payments",
+      "item": [
+        {
+          "name": "Get My Payment Methods",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { myPaymentMethods { id type cardholderName lastFourDigits expiryMonth expiryYear isDefault } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Add Payment Method (Admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { addPaymentMethod(input: { type: CREDIT_CARD, cardholderName: \\\"Nick Fury\\\", cardNumber: \\\"4111111111114242\\\", expiryMonth: 12, expiryYear: 2027, isDefault: false }) { id lastFourDigits type isDefault } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Delete Payment Method (Admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { deletePaymentMethod(id: \\\"PAYMENT_ID_HERE\\\") }\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔒 RBAC Tests",
+      "item": [
+        {
+          "name": "Member tries to Checkout (should 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { checkoutOrder(orderId: \\\"any-id\\\", paymentMethodId: \\\"any-id\\\") { id status } }\"}"
+            }
+          }
+        },
+        {
+          "name": "India Manager sees India restaurants only",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { restaurants { id name country } }\"}"
+            }
+          }
+        },
+        {
+          "name": "India Manager tries US restaurant (should 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": "{{BASE_URL}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"query { restaurant(id: \\\"rest-us-1\\\") { id name country } }\"}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
