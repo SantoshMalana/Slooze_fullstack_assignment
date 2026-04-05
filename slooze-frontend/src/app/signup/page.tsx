@@ -17,7 +17,6 @@ export default function SignupPage() {
     country: 'INDIA',
   });
   const [error, setError] = useState('');
-  const { login } = useAuth();
   const router = useRouter();
 
   const [registerMutation, { loading }] = useMutation(REGISTER_MUTATION);
@@ -51,8 +50,7 @@ export default function SignupPage() {
           },
         },
       });
-      login(data.register.accessToken, data.register.user);
-      router.push('/dashboard');
+      router.push('/login?registered=true');
     } catch (err: any) {
       setError(err.message?.replace('ApolloError: ', '') || 'Registration failed. Please try again.');
     }

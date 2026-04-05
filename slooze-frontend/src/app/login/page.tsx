@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@apollo/client';
 import Link from 'next/link';
 import { LOGIN_MUTATION, VERIFY_OTP_MUTATION } from '@/lib/graphql/operations';
@@ -19,6 +19,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const justRegistered = searchParams.get('registered') === 'true';
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [loginMutation, { loading: loggingIn }] = useMutation(LOGIN_MUTATION);
@@ -138,6 +140,12 @@ export default function LoginPage() {
               <h2 className="text-3xl font-bold text-white mb-2">Welcome back</h2>
               <p className="text-gray-400 mb-8">Sign in to your account</p>
 
+              {justRegistered && (
+                <div className="mb-6 bg-green-900/30 border border-green-800 text-green-400 rounded-lg px-4 py-3 text-sm">
+                  ✅ Account created! Please sign in to receive your login OTP.
+                </div>
+              )}
+
               <form onSubmit={handleCredentials} className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
@@ -176,9 +184,9 @@ export default function LoginPage() {
                   {loggingIn ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Signing in...
+                      Loading...
                     </span>
-                  ) : 'Sign in'}
+                  ) : 'Sign In / Send OTP'}
                 </button>
               </form>
 
