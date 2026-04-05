@@ -12,69 +12,33 @@ async function main() {
   const users = await Promise.all([
     prisma.user.upsert({
       where: { username: 'nick_fury' },
-      update: {},
-      create: {
-        username: 'nick_fury',
-        password,
-        displayName: 'Nick Fury',
-        role: Role.ADMIN,
-        country: CountryCode.AMERICA, // Admin — country ignored in access checks
-      },
+      update: { skipOtp: true },
+      create: { username: 'nick_fury', email: 'nick.fury@slooze.com', password, displayName: 'Nick Fury', role: Role.ADMIN, country: CountryCode.AMERICA, skipOtp: true },
     }),
     prisma.user.upsert({
       where: { username: 'captain_marvel' },
-      update: {},
-      create: {
-        username: 'captain_marvel',
-        password,
-        displayName: 'Captain Marvel',
-        role: Role.MANAGER,
-        country: CountryCode.INDIA,
-      },
+      update: { skipOtp: true },
+      create: { username: 'captain_marvel', email: 'captain.marvel@slooze.com', password, displayName: 'Captain Marvel', role: Role.MANAGER, country: CountryCode.INDIA, skipOtp: true },
     }),
     prisma.user.upsert({
       where: { username: 'captain_america' },
-      update: {},
-      create: {
-        username: 'captain_america',
-        password,
-        displayName: 'Captain America',
-        role: Role.MANAGER,
-        country: CountryCode.AMERICA,
-      },
+      update: { skipOtp: true },
+      create: { username: 'captain_america', email: 'captain.america@slooze.com', password, displayName: 'Captain America', role: Role.MANAGER, country: CountryCode.AMERICA, skipOtp: true },
     }),
     prisma.user.upsert({
       where: { username: 'thanos' },
-      update: {},
-      create: {
-        username: 'thanos',
-        password,
-        displayName: 'Thanos',
-        role: Role.MEMBER,
-        country: CountryCode.INDIA,
-      },
+      update: { skipOtp: true },
+      create: { username: 'thanos', email: 'thanos@slooze.com', password, displayName: 'Thanos', role: Role.MEMBER, country: CountryCode.INDIA, skipOtp: true },
     }),
     prisma.user.upsert({
       where: { username: 'thor' },
-      update: {},
-      create: {
-        username: 'thor',
-        password,
-        displayName: 'Thor',
-        role: Role.MEMBER,
-        country: CountryCode.INDIA,
-      },
+      update: { skipOtp: true },
+      create: { username: 'thor', email: 'thor@slooze.com', password, displayName: 'Thor', role: Role.MEMBER, country: CountryCode.INDIA, skipOtp: true },
     }),
     prisma.user.upsert({
       where: { username: 'travis' },
-      update: {},
-      create: {
-        username: 'travis',
-        password,
-        displayName: 'Travis',
-        role: Role.MEMBER,
-        country: CountryCode.AMERICA,
-      },
+      update: { skipOtp: true },
+      create: { username: 'travis', email: 'travis@slooze.com', password, displayName: 'Travis', role: Role.MEMBER, country: CountryCode.AMERICA, skipOtp: true },
     }),
   ]);
 

@@ -13,6 +13,9 @@ export class UserType {
   username: string;
 
   @Field()
+  email: string;
+
+  @Field()
   displayName: string;
 
   @Field(() => Role)

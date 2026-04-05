@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './jwt.strategy';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtStrategy } from './jwt.strategy';
         signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN', '7d') },
       }),
     }),
+    EmailModule,
   ],
   providers: [AuthService, AuthResolver, JwtStrategy],
   exports: [JwtStrategy, PassportModule],

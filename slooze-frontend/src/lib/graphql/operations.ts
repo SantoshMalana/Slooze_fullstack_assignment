@@ -1,13 +1,36 @@
 import { gql } from '@apollo/client';
 
 // ─── AUTH ────────────────────────────────────────────────────────
+
+// Smart login: handles both demo users (direct) and registered users (OTP)
 export const LOGIN_MUTATION = gql`
   mutation Login($username: String!, $password: String!) {
     login(username: $username, password: $password) {
+      requiresOtp
       accessToken
       user {
         id
         username
+        email
+        displayName
+        role
+        country
+      }
+      userId
+      maskedEmail
+      message
+    }
+  }
+`;
+
+export const VERIFY_OTP_MUTATION = gql`
+  mutation VerifyOtp($userId: String!, $otp: String!) {
+    verifyOtp(userId: $userId, otp: $otp) {
+      accessToken
+      user {
+        id
+        username
+        email
         displayName
         role
         country
@@ -15,6 +38,24 @@ export const LOGIN_MUTATION = gql`
     }
   }
 `;
+
+export const REGISTER_MUTATION = gql`
+  mutation Register($input: RegisterInput!) {
+    register(input: $input) {
+      accessToken
+      user {
+        id
+        username
+        email
+        displayName
+        role
+        country
+      }
+    }
+  }
+`;
+
+
 
 // ─── RESTAURANTS ─────────────────────────────────────────────────
 export const GET_RESTAURANTS = gql`

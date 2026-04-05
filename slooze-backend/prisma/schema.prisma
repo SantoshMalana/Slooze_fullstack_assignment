@@ -43,18 +43,39 @@ enum PaymentType {
 model User {
   id          String      @id @default(uuid())
   username    String      @unique
+  email       String      @unique
   password    String      // bcrypt hashed
   displayName String
   role        Role
   country     CountryCode
+  skipOtp     Boolean     @default(false) // true for seeded demo users
 
   orders         Order[]
   paymentMethods PaymentMethod[]
+  otpTokens      OtpToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// OTP TOKEN
+// ─────────────────────────────────────────────
+
+model OtpToken {
+  id        String   @id @default(uuid())
+  token     String   // 6-digit OTP
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+
+  @@map("otp_tokens")
 }
 
 // ─────────────────────────────────────────────

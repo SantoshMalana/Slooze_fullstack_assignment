@@ -15,7 +15,7 @@ export class UsersResolver {
   // Admin only — view all users
   @Query(() => [UserType])
   @Roles(Role.ADMIN)
-  async users(): Promise<UserType[]> {
+  async users() {
     return this.usersService.findAll();
   }
 }
