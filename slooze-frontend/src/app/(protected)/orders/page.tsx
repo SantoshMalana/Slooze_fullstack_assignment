@@ -9,6 +9,7 @@ import {
   CHECKOUT_ORDER,
   CANCEL_ORDER,
 } from '@/lib/graphql/operations';
+import { formatCurrency } from '@/lib/utils';
 import clsx from 'clsx';
 
 const statusStyles: Record<string, string> = {
@@ -169,9 +170,7 @@ export default function OrdersPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xl font-bold text-white">
-                    {order.totalAmount >= 100
-                      ? `₹${order.totalAmount.toFixed(0)}`
-                      : `$${order.totalAmount.toFixed(2)}`}
+                    {formatCurrency(order.totalAmount, order.restaurant.country)}
                   </span>
                   <span className={statusStyles[order.status]}>{order.status}</span>
                 </div>
@@ -186,9 +185,7 @@ export default function OrdersPage() {
                         {item.menuItem.name} × {item.quantity}
                       </span>
                       <span className="text-gray-400">
-                        {item.price >= 100
-                          ? `₹${item.price.toFixed(0)}`
-                          : `$${item.price.toFixed(2)}`}
+                        {formatCurrency(item.price, order.restaurant.country)}
                       </span>
                     </div>
                   ))}

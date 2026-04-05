@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@apollo/client';
 import { useAuth } from '@/context/AuthContext';
 import { GET_MY_ORDERS } from '@/lib/graphql/operations';
+import { formatCurrency } from '@/lib/utils';
 
 const statCards = (orders: any[]) => [
   {
@@ -151,7 +152,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <div className="font-semibold text-white">
-                      ₹{order.totalAmount.toFixed(2)}
+                      {formatCurrency(order.totalAmount, order.restaurant.country)}
                     </div>
                   </div>
                   <span className={statusStyles[order.status]}>{order.status}</span>

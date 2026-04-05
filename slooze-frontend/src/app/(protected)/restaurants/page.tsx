@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useAuth } from '@/context/AuthContext';
 import { GET_RESTAURANTS, CREATE_ORDER, GET_MY_ORDERS } from '@/lib/graphql/operations';
+import { formatCurrency } from '@/lib/utils';
 import clsx from 'clsx';
 
 interface MenuItem {
@@ -200,9 +201,7 @@ export default function RestaurantsPage() {
                                 {item.description}
                               </div>
                               <div className="text-orange-400 font-semibold mt-1">
-                                {item.price >= 100
-                                  ? `₹${item.price}`
-                                  : `$${item.price.toFixed(2)}`}
+                                {formatCurrency(item.price, selectedRestaurant.country)}
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -255,18 +254,14 @@ export default function RestaurantsPage() {
                           {c.menuItem.name} × {c.quantity}
                         </span>
                         <span className="text-white font-medium">
-                          {c.menuItem.price >= 100
-                            ? `₹${(c.menuItem.price * c.quantity).toFixed(0)}`
-                            : `$${(c.menuItem.price * c.quantity).toFixed(2)}`}
+                          {formatCurrency(c.menuItem.price * c.quantity, selectedRestaurant.country)}
                         </span>
                       </div>
                     ))}
                     <div className="border-t border-gray-700 pt-2 flex justify-between font-semibold">
                       <span className="text-white">Total</span>
                       <span className="text-orange-400">
-                        {cartTotal >= 100
-                          ? `₹${cartTotal.toFixed(0)}`
-                          : `$${cartTotal.toFixed(2)}`}
+                        {formatCurrency(cartTotal, selectedRestaurant.country)}
                       </span>
                     </div>
                   </div>
