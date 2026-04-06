@@ -114,11 +114,22 @@ export class EmailService {
 </body>
 </html>`;
 
-    await this.resend.emails.send({
-      from: `Slooze 🍽️ <${this.fromEmail}>`,
-      to,
-      subject: `${otp} is your Slooze login code`,
-      html,
-    });
+    try {
+      console.log(`[EmailService] Sending OTP to ${to} using Resend...`);
+      const result = await this.resend.emails.send({
+        from: `Slooze 🍽️ <${this.fromEmail}>`,
+        to,
+        subject: `${otp} is your Slooze login code`,
+        html,
+      });
+      
+      console.log(`[EmailService] Resend API Result:`, result);
+      
+      if (result.error) {
+        console.error(`[EmailService] Resend API Error returned inside result:`, result.error);
+      }
+    } catch (err) {
+      console.error(`[EmailService] Caught exception while calling Resend:`, err);
+    }
   }
 }
