@@ -80,7 +80,7 @@ export class EmailService {
       const sendSmtpEmail = new brevo.SendSmtpEmail();
       sendSmtpEmail.subject = `${otp} is your Slooze login code`;
       sendSmtpEmail.htmlContent = htmlContent;
-      sendSmtpEmail.sender = { name: 'Slooze', email: 'sloozebackend@gmail.com' };
+      sendSmtpEmail.sender = { name: 'Slooze', email: 'santoshmalana39@gmail.com' };
       sendSmtpEmail.to = [{ email: to, name: displayName }];
 
       await apiInstance.sendTransacEmail(sendSmtpEmail);
