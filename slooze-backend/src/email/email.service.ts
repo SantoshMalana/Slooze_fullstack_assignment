@@ -1,23 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import * as nodemailer from 'nodemailer';
+import * as brevo from '@getbrevo/brevo';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
 
-  constructor(private config: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.elasticemail.com',
-      port: 2525,
-      auth: {
-        user: 'sloozebackend@gmail.com',
-        pass: process.env.ELASTIC_PASS || this.config.get<string>('ELASTIC_PASS') || '359FF066340DD74F577966599EAE23198F81'
-      }
-    });
-  }
+  constructor(private config: ConfigService) {}
 
   async sendOtpEmail(to: string, displayName: string, otp: string): Promise<void> {
     // Always log OTP as a reliable server-side fallback
@@ -81,17 +71,22 @@ export class EmailService {
 </body>
 </html>`;
 
-    try {
-      const info = await this.transporter.sendMail({
-        from: '"Slooze" <sloozebackend@gmail.com>',
-        to,
-        subject: `${otp} is your Slooze login code`,
-        html: htmlContent,
-      });
+    const apiKey = process.env.EMAIL_TOKEN || this.config.get<string>('EMAIL_TOKEN');
 
-      this.logger.log(`Email delivered using ElasticEmail! Message ID: ${info.messageId}`);
+    try {
+      const apiInstance = new brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey || '');
+
+      const sendSmtpEmail = new brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = `${otp} is your Slooze login code`;
+      sendSmtpEmail.htmlContent = htmlContent;
+      sendSmtpEmail.sender = { name: 'Slooze', email: 'sloozebackend@gmail.com' };
+      sendSmtpEmail.to = [{ email: to, name: displayName }];
+
+      await apiInstance.sendTransacEmail(sendSmtpEmail);
+      this.logger.log(`Email delivered via Brevo SDK successfully!`);
     } catch (err: any) {
-      this.logger.error(`Failed to completely send via ElasticEmail.`, err);
+      this.logger.error(`Failed to send via Brevo SDK.`, err.response?.text || err);
     }
   }
 }
