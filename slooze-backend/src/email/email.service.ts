@@ -1,13 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import * as brevo from '@getbrevo/brevo';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
+  private transporter: nodemailer.Transporter;
 
-  constructor(private config: ConfigService) {}
+  constructor(private config: ConfigService) {
+    this.transporter = nodemailer.createTransport({
+      host: 'smtp.elasticemail.com',
+      port: 2525,
+      auth: {
+        user: 'sloozebackend@gmail.com',
+        pass: process.env.ELASTIC_PASS || this.config.get<string>('ELASTIC_PASS') || '359FF066340DD74F577966599EAE23198F81'
+      }
+    });
+  }
 
   async sendOtpEmail(to: string, displayName: string, otp: string): Promise<void> {
     // Always log OTP as a reliable server-side fallback
@@ -15,9 +25,6 @@ export class EmailService {
     this.logger.log(`OTP GENERATED FOR : ${to}`);
     this.logger.log(`OTP CODE          : ${otp}`);
     this.logger.log('=============================================');
-
-    const apiKey = process.env.EMAIL_TOKEN || this.config.get<string>('EMAIL_TOKEN');
-    const senderEmail = process.env.BREVO_USER || this.config.get<string>('BREVO_USER') || 'a741bc001@smtp-brevo.com';
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -75,19 +82,16 @@ export class EmailService {
 </html>`;
 
     try {
-      const apiInstance = new brevo.TransactionalEmailsApi();
-      apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey || '');
+      const info = await this.transporter.sendMail({
+        from: '"Slooze" <sloozebackend@gmail.com>',
+        to,
+        subject: `${otp} is your Slooze login code`,
+        html: htmlContent,
+      });
 
-      const sendSmtpEmail = new brevo.SendSmtpEmail();
-      sendSmtpEmail.subject = `${otp} is your Slooze login code`;
-      sendSmtpEmail.htmlContent = htmlContent;
-      sendSmtpEmail.sender = { name: "Slooze", email: senderEmail };
-      sendSmtpEmail.to = [{ email: to, name: displayName }];
-
-      const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-      this.logger.log(`Email delivered using SDK successfully!`);
+      this.logger.log(`Email delivered using ElasticEmail! Message ID: ${info.messageId}`);
     } catch (err: any) {
-      this.logger.error(`Failed to call Brevo API. OTP is visible in logs above.`, err.response?.text || err);
+      this.logger.error(`Failed to completely send via ElasticEmail.`, err);
     }
   }
 }
