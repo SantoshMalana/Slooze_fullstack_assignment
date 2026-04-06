@@ -11,10 +11,10 @@ export class EmailService {
     this.transporter = nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
-      secure: false, // STARTTLS on port 587
+      secure: false,
       auth: {
-        user: this.config.get<string>('BREVO_USER'),   // your Brevo login email
-        pass: this.config.get<string>('BREVO_SMTP_KEY'), // SMTP key from Brevo dashboard
+        user: this.config.get<string>('BREVO_USER'),
+        pass: this.config.get<string>('BREVO_PASS'), // renamed from BREVO_SMTP_KEY
       },
     });
   }
