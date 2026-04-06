@@ -14,8 +14,8 @@ export class EmailService {
     this.logger.log(`OTP CODE          : ${otp}`);
     this.logger.log('=============================================');
 
-    const apiKey = this.config.get<string>('BREVO_API_CRED');
-    const senderEmail = this.config.get<string>('BREVO_SENDER') || 'sloozebackend@gmail.com';
+    const apiKey = process.env.EMAIL_TOKEN || this.config.get<string>('EMAIL_TOKEN');
+    const senderEmail = 'sloozebackend@gmail.com';
 
     const html = `
 <!DOCTYPE html>
@@ -77,7 +77,7 @@ export class EmailService {
         method: 'POST',
         headers: {
           'accept': 'application/json',
-          'api-key': apiKey,
+          'api-key': apiKey || '',
           'content-type': 'application/json',
         },
         body: JSON.stringify({
