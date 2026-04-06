@@ -1,19 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
+  private fromEmail: string;
 
   constructor(private config: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: this.config.get<string>('GMAIL_USER'),
-        pass: this.config.get<string>('GMAIL_APP_PASSWORD'),
-      },
-    });
+    this.resend = new Resend(this.config.get<string>('RESEND_API_KEY'));
+    this.fromEmail = this.config.get<string>('FROM_EMAIL') || 'onboarding@resend.dev';
   }
 
   async sendOtpEmail(to: string, displayName: string, otp: string): Promise<void> {
@@ -118,8 +114,8 @@ export class EmailService {
 </body>
 </html>`;
 
-    await this.transporter.sendMail({
-      from: `"Slooze 🍽️" <${this.config.get('GMAIL_USER')}>`,
+    await this.resend.emails.send({
+      from: `Slooze 🍽️ <${this.fromEmail}>`,
       to,
       subject: `${otp} is your Slooze login code`,
       html,
