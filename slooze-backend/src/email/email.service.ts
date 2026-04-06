@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import * as brevo from '@getbrevo/brevo';
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -15,9 +17,9 @@ export class EmailService {
     this.logger.log('=============================================');
 
     const apiKey = process.env.EMAIL_TOKEN || this.config.get<string>('EMAIL_TOKEN');
-    const senderEmail = 'sloozebackend@gmail.com';
+    const senderEmail = process.env.BREVO_USER || this.config.get<string>('BREVO_USER') || 'a741bc001@smtp-brevo.com';
 
-    const html = `
+    const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,30 +75,19 @@ export class EmailService {
 </html>`;
 
     try {
-      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'api-key': apiKey || '',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender: { name: 'Slooze', email: senderEmail },
-          to: [{ email: to, name: displayName }],
-          subject: `${otp} is your Slooze login code`,
-          htmlContent: html,
-        }),
-      });
+      const apiInstance = new brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey || '');
 
-      const result = await response.json() as any;
+      const sendSmtpEmail = new brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = `${otp} is your Slooze login code`;
+      sendSmtpEmail.htmlContent = htmlContent;
+      sendSmtpEmail.sender = { name: "Slooze", email: senderEmail };
+      sendSmtpEmail.to = [{ email: to, name: displayName }];
 
-      if (!response.ok) {
-        this.logger.error(`Brevo API error: ${JSON.stringify(result)}`);
-      } else {
-        this.logger.log(`Email delivered successfully. MessageId: ${result.messageId}`);
-      }
-    } catch (err) {
-      this.logger.error(`Failed to call Brevo API. OTP is visible in logs above.`, err);
+      const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+      this.logger.log(`Email delivered using SDK. MessageId: ${data.messageId}`);
+    } catch (err: any) {
+      this.logger.error(`Failed to call Brevo API. OTP is visible in logs above.`, err.response?.text || err);
     }
   }
 }
