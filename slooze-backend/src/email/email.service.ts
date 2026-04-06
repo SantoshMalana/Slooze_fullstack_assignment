@@ -1,18 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  private resend: Resend;
-  private fromEmail: string;
+  private readonly logger = new Logger(EmailService.name);
+  private transporter: nodemailer.Transporter;
 
   constructor(private config: ConfigService) {
-    this.resend = new Resend(this.config.get<string>('RESEND_API_KEY'));
-    this.fromEmail = this.config.get<string>('FROM_EMAIL') || 'onboarding@resend.dev';
+    this.transporter = nodemailer.createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false, // STARTTLS on port 587
+      auth: {
+        user: this.config.get<string>('BREVO_USER'),   // your Brevo login email
+        pass: this.config.get<string>('BREVO_SMTP_KEY'), // SMTP key from Brevo dashboard
+      },
+    });
   }
 
   async sendOtpEmail(to: string, displayName: string, otp: string): Promise<void> {
+    // Always log OTP to server console as a reliable dev fallback
+    this.logger.log('=============================================');
+    this.logger.log(`OTP GENERATED FOR : ${to}`);
+    this.logger.log(`OTP CODE          : ${otp}`);
+    this.logger.log('=============================================');
+
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -64,7 +77,7 @@ export class EmailService {
             <td style="padding:36px 40px;">
               <p style="margin:0 0 8px;color:#9ca3af;font-size:14px;">Hi <strong style="color:#f3f4f6;">${displayName}</strong>,</p>
               <p style="margin:0 0 28px;color:#9ca3af;font-size:14px;line-height:1.6;">
-                Someone requested a sign-in to your Slooze account. Use the code below — it expires in <strong style="color:#f97316;">10 minutes</strong>.
+                Someone requested a sign-in to your Slooze account. Use the code below &mdash; it expires in <strong style="color:#f97316;">10 minutes</strong>.
               </p>
 
               <!-- OTP Box -->
@@ -82,7 +95,7 @@ export class EmailService {
                 <tr>
                   <td style="background-color:#1c1400;border:1px solid #713f12;border-radius:8px;padding:14px 16px;">
                     <p style="margin:0;color:#fbbf24;font-size:13px;line-height:1.5;">
-                      ⚠️ &nbsp;If you didn't request this, please ignore this email. Your password has not been changed.
+                      If you did not request this, please ignore this email. Your account is safe.
                     </p>
                   </td>
                 </tr>
@@ -90,9 +103,9 @@ export class EmailService {
 
               <!-- Tips -->
               <p style="margin:28px 0 0;color:#4b5563;font-size:13px;line-height:1.8;">
-                • This code is valid for <strong style="color:#6b7280;">10 minutes</strong><br/>
-                • Never share this code with anyone<br/>
-                • Slooze will never ask for your OTP via phone or chat
+                &bull; This code is valid for <strong style="color:#6b7280;">10 minutes</strong><br/>
+                &bull; Never share this code with anyone<br/>
+                &bull; Slooze will never ask for your OTP via phone or chat
               </p>
             </td>
           </tr>
@@ -101,8 +114,8 @@ export class EmailService {
           <tr>
             <td style="padding:20px 40px;border-top:1px solid #2a2d3a;">
               <p style="margin:0;color:#374151;font-size:12px;text-align:center;">
-                © 2024 Slooze · Role-based Food Ordering Platform<br/>
-                <span style="color:#1f2937;">This is an automated message — please do not reply.</span>
+                &copy; 2024 Slooze &middot; Role-based Food Ordering Platform<br/>
+                <span style="color:#1f2937;">This is an automated message &mdash; please do not reply.</span>
               </p>
             </td>
           </tr>
@@ -115,21 +128,15 @@ export class EmailService {
 </html>`;
 
     try {
-      console.log(`[EmailService] Sending OTP to ${to} using Resend...`);
-      const result = await this.resend.emails.send({
-        from: `Slooze 🍽️ <${this.fromEmail}>`,
+      const info = await this.transporter.sendMail({
+        from: `"Slooze" <${this.config.get('BREVO_USER')}>`,
         to,
         subject: `${otp} is your Slooze login code`,
         html,
       });
-      
-      console.log(`[EmailService] Resend API Result:`, result);
-      
-      if (result.error) {
-        console.error(`[EmailService] Resend API Error returned inside result:`, result.error);
-      }
+      this.logger.log(`Email delivered successfully. MessageId: ${info.messageId}`);
     } catch (err) {
-      console.error(`[EmailService] Caught exception while calling Resend:`, err);
+      this.logger.error(`Failed to send email to ${to}. OTP is visible in logs above.`, err);
     }
   }
 }
