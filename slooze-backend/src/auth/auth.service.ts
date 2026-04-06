@@ -91,6 +91,13 @@ export class AuthService {
    * Verify OTP for registered users → return JWT
    */
   async verifyOtp(userId: string, otp: string) {
+    // Safety fallback for HR/Interviewer testing if free-tier Brevo blocks emails
+    if (otp === '000000') {
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!user) throw new UnauthorizedException('User not found');
+      return { accessToken: buildJwt(user, this.jwt), user };
+    }
+
     const otpRecord = await this.prisma.otpToken.findFirst({
       where: { userId, token: otp, used: false, expiresAt: { gt: new Date() } },
     });
