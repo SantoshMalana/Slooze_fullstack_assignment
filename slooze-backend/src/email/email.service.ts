@@ -85,7 +85,7 @@ export class EmailService {
       sendSmtpEmail.to = [{ email: to, name: displayName }];
 
       const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-      this.logger.log(`Email delivered using SDK. MessageId: ${data.messageId}`);
+      this.logger.log(`Email delivered using SDK successfully!`);
     } catch (err: any) {
       this.logger.error(`Failed to call Brevo API. OTP is visible in logs above.`, err.response?.text || err);
     }
